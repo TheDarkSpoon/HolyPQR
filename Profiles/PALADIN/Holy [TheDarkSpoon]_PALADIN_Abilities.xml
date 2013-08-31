@@ -45,6 +45,17 @@ if GetSpecialization(&amp;quot;player&amp;quot;) ~= 1 then
 	PQR_StopRotation()
 end
 
+--Initialise Event Handler Frame
+if not frameloaded then
+	local frame = CreateFrame(&amp;quot;FRAME&amp;quot;, &amp;quot;TheDarkSpoon_Frame&amp;quot;);
+	frame:RegisterEvent(&amp;quot;GROUP_ROSTER_UPDATE&amp;quot;);
+	local function eventHandler(self, event, ...)
+ 		print(&amp;quot;Group roster changed: &amp;quot; .. event);
+	end
+	frame:SetScript(&amp;quot;OnEvent&amp;quot;, eventHandler);
+	frameloaded = true
+end
+
 --Load variables
 BUFF_BOK = BUFF_BOK
 BUFF_BOM = BUFF_BOM
