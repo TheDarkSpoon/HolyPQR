@@ -50,24 +50,25 @@ BUFF_BOK = BUFF_BOK
 BUFF_BOM = BUFF_BOM
 BUFF_SOI = BUFF_SOI
 NumInGroup = 0
-GroupType = nil
+GroupType = &amp;quot;none&amp;quot;
 tanks = {}
 healers = {}
 dps = {}
 
-table.insert(tanks, &amp;quot;party1&amp;quot;)
+--Set group type (this happens lots. needs fixing)
+	if IsInGroup() and IsInRaid() then
+		GroupType = &amp;quot;raid&amp;quot;
+	elseif IsInGroup() then
+		GroupType = &amp;quot;party&amp;quot;
+	else
+		GroupType = &amp;quot;none&amp;quot;
+	end
+
 --Initialise Event Handler Frame
 if not frameloaded then
 	local frame = CreateFrame(&amp;quot;FRAME&amp;quot;, &amp;quot;TheDarkSpoon_Frame&amp;quot;)
 	frame:RegisterEvent(&amp;quot;GROUP_ROSTER_UPDATE&amp;quot;)
 	local function eventHandler(self, event, ...)
-		if IsInGroup() and IsInRaid() then
-			GroupType = &amp;quot;raid&amp;quot;
-		elseif IsInGroup() then
-			GroupType = &amp;quot;party&amp;quot;
-		else
-			GroupType = &amp;quot;none&amp;quot;
-		end
 		tanks = {}
 		healers = {}
 		dps = {}
@@ -119,15 +120,16 @@ end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False
 ---               Do some vars				 ---
 ------------------------------------------------
 local _,_,_,_,_,_,_,caster = UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK)
-if not UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK) then
-	CastSpellByID(BUFF_BOK)
-elseif UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK) and caster ~= &amp;quot;player&amp;quot; and not UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOM) then
-	CastSpellByID(BUFF_BOM)
-end
 
 ------------------------------------------------
----					Seals					 ---
+---           Check BOK on others			 ---
 ------------------------------------------------
-if GetShapeshiftForm(&amp;quot;player&amp;quot;) ~= 3 then
-	CastSpellByID(BUFF_SOI)
+for i = 1, NumInGroup+1 do
+	if UnitBuffID(&amp;quot;player&amp;quot;, BUFF_BOK) 
+	and UnitBuffID(GroupType .. i, BUFF_BOK)==nil 
+	and caster==&amp;quot;player&amp;quot; 
+	and IsSpellInRange(GetSpellInfo(BUFF_BOK), GroupType .. i)
+	then
+		CastSpellByID(BUFF_BOK)
+	end
 end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></PALADIN>
