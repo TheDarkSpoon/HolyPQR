@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?><PALADIN><Ability><Name>1 - Init</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>-------------------------------------------------------------------------------
+-- Variables &amp; Sanity checks
+-------------------------------------------------------------------------------
+-- PQInterface is an absolute requirement from now on.
+if not IsAddOnLoaded(&amp;quot;PQInterface&amp;quot;) then
+	PQR_WriteToChat(&amp;quot;|cffDC143CPQInterface is required to run this profile!|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
+	PQR_WriteToChat(&amp;quot;|cffDC143CThe profile has been stopped.|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
+	PQR_StopRotation()
+end
+
+-- Load LUA data files.
+if PQR_RotationStarted == true then
+	PQR_RotationStarted = false	
+
+	-- Load LUA files
+	if PQR_LoadLua ~= nil then
+		if PQR_LoadLua(&amp;quot;PQR_DarkSpoon_Data.lua&amp;quot;) == false then
+			PQR_WriteToChat(&amp;quot;|cffb73737You&amp;apos;re missing PQR_Broseph_Data.lua - Make sure it&amp;apos;s in your Data folder! The Rotation has been halted.|cffffffff&amp;quot;, &amp;quot;Error&amp;quot;)
+			PQR_StopRotation()
+			return true
+		end
+		if PQR_LoadLua(&amp;quot;PQR_PQI.lua&amp;quot;) == false then
+			PQR_WriteToChat(&amp;quot;|cffb73737You&amp;apos;re missing PQR_PQI.lua - It&amp;apos;s required to run the profile! The Rotation has been halted.|cffffffff&amp;quot;, &amp;quot;Error&amp;quot;)
+			PQR_StopRotation()
+			return true
+		end
+	end
+end
+
+--Check player is 90
+if UnitLevel(&amp;quot;player&amp;quot;) ~= 90 then
+	PQR_WriteToChat(&amp;quot;|cffff0000This rotation is designed for level 90s only!|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
+	PQR_WriteToChat(&amp;quot;|cffff0000I won&amp;apos;t stop the rotation, but you use it at your own risk if you continue!|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
+end
+
+--Check player is a pally (shouldn&amp;apos;t be necessary, but you never know)
+if UnitClass(&amp;quot;player&amp;quot;) ~= &amp;quot;Paladin&amp;quot; then
+	PQR_WriteToChat(&amp;quot;|cffff0000Don&amp;apos;t be silly, you aren&amp;apos;t a Paladin :P|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
+	PQR_StopRotation()
+end
+
+--Check spec is holy
+if GetSpecialization(&amp;quot;player&amp;quot;) ~= 1 then
+	PQR_WriteToChat(&amp;quot;|cffff0000This rotation is designed for |cffFFDB3DHoly|cffff0000 Paladins. You should change your spec!|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
+	PQR_StopRotation()
+end
+
+--Load variables
+BUFF_BOK = BUFF_BOK
+BUFF_BOM = BUFF_BOM
+BUFF_SOI = BUFF_SOI
+NumInGroup = 0
+GroupType = nil</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>2 - Buffs</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
+---               Blessings					 ---
+------------------------------------------------
+local _,_,_,_,_,_,_,caster = UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK)
+if not UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK) then
+	CastSpellByID(BUFF_BOK)
+elseif UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK) and caster ~= &amp;quot;player&amp;quot; and not UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOM) then
+	CastSpellByID(BUFF_BOM)
+end
+
+------------------------------------------------
+---					Seals					 ---
+------------------------------------------------
+if GetShapeshiftForm(&amp;quot;player&amp;quot;) ~= 3 then
+	CastSpellByID(BUFF_SOI)
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>3 - Healing</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
+---               Do some vars				 ---
+------------------------------------------------
+local _,_,_,_,_,_,_,caster = UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK)
+if not UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK) then
+	CastSpellByID(BUFF_BOK)
+elseif UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK) and caster ~= &amp;quot;player&amp;quot; and not UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOM) then
+	CastSpellByID(BUFF_BOM)
+end
+
+------------------------------------------------
+---					Seals					 ---
+------------------------------------------------
+if GetShapeshiftForm(&amp;quot;player&amp;quot;) ~= 3 then
+	CastSpellByID(BUFF_SOI)
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></PALADIN>
