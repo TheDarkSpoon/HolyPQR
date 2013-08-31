@@ -45,23 +45,62 @@ if GetSpecialization(&amp;quot;player&amp;quot;) ~= 1 then
 	PQR_StopRotation()
 end
 
---Initialise Event Handler Frame
-if not frameloaded then
-	local frame = CreateFrame(&amp;quot;FRAME&amp;quot;, &amp;quot;TheDarkSpoon_Frame&amp;quot;);
-	frame:RegisterEvent(&amp;quot;GROUP_ROSTER_UPDATE&amp;quot;);
-	local function eventHandler(self, event, ...)
- 		print(&amp;quot;Group roster changed: &amp;quot; .. event);
-	end
-	frame:SetScript(&amp;quot;OnEvent&amp;quot;, eventHandler);
-	frameloaded = true
-end
-
---Load variables
+--Load variables &amp; functions
 BUFF_BOK = BUFF_BOK
 BUFF_BOM = BUFF_BOM
 BUFF_SOI = BUFF_SOI
 NumInGroup = 0
-GroupType = nil</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>2 - Buffs</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
+GroupType = nil
+tanks = {}
+healers = {}
+dps = {}
+
+table.insert(tanks, &amp;quot;party1&amp;quot;)
+--Initialise Event Handler Frame
+if not frameloaded then
+	local frame = CreateFrame(&amp;quot;FRAME&amp;quot;, &amp;quot;TheDarkSpoon_Frame&amp;quot;)
+	frame:RegisterEvent(&amp;quot;GROUP_ROSTER_UPDATE&amp;quot;)
+	local function eventHandler(self, event, ...)
+		if IsInGroup() and IsInRaid() then
+			GroupType = &amp;quot;raid&amp;quot;
+		elseif IsInGroup() then
+			GroupType = &amp;quot;party&amp;quot;
+		else
+			GroupType = &amp;quot;none&amp;quot;
+		end
+		tanks = {}
+		healers = {}
+		dps = {}
+		NumInGroup = GetNumGroupMembers() - 1
+		--print(&amp;quot;Roster updated: Number in &amp;quot; .. GroupType .. &amp;quot;=&amp;quot; .. NumInGroup)
+		if IsInGroup() and UnitGroupRolesAssigned(&amp;quot;player&amp;quot;) == &amp;quot;HEALER&amp;quot; then
+			table.insert(healers, &amp;quot;player&amp;quot;)
+		else
+			PQR_WriteToChat(&amp;quot;|cffFF0000Your group role is not set as healer! Ensure everyone has their roles correctly set. Will assume you are healing anyway.|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
+			table.insert(healers, &amp;quot;player&amp;quot;)
+		end
+		for i = 1, NumInGroup do
+			if UnitGroupRolesAssigned(GroupType .. i) == &amp;quot;DAMAGER&amp;quot; then
+				table.insert(dps, GroupType .. i)
+			elseif UnitGroupRolesAssigned(GroupType .. i) == &amp;quot;HEALER&amp;quot; then
+				table.insert(healers, GroupType .. i)
+			elseif UnitGroupRolesAssigned(GroupType .. i) == &amp;quot;TANK&amp;quot; then
+				table.insert(tanks, GroupType .. i)
+			end
+		end
+		for i = 1, #dps do
+			print(UnitName(dps[i]) .. &amp;quot; is a DPS&amp;quot;)
+		end
+		for i = 1, #healers do
+			print(UnitName(healers[i]) .. &amp;quot; is a Healer&amp;quot;)
+		end
+		for i = 1, #tanks do
+			print(UnitName(tanks[i]) .. &amp;quot; is a Tank&amp;quot;)
+		end
+ 	end
+	frame:SetScript(&amp;quot;OnEvent&amp;quot;, eventHandler)
+	frameloaded = true
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>2 - Buffs</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
 ---               Blessings					 ---
 ------------------------------------------------
 local _,_,_,_,_,_,_,caster = UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK)
