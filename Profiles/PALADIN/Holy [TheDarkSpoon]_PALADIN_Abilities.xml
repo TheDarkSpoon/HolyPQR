@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?><PALADIN><Ability><Name>1 - Init</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>-------------------------------------------------------------------------------
--- Variables &amp; Sanity checks
+-- Variables &amp; Sanity checks (thanks to mentally for the code)
 -------------------------------------------------------------------------------
 -- PQInterface is an absolute requirement from now on.
 if not IsAddOnLoaded(&amp;quot;PQInterface&amp;quot;) then
@@ -101,7 +101,26 @@ if not frameloaded then
  	end
 	frame:SetScript(&amp;quot;OnEvent&amp;quot;, eventHandler)
 	frameloaded = true
-end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>2 - Buffs</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
+end
+
+--PQI Config (This&amp;apos;ll go in data later, just testing for now)
+local config = {
+  name  = &amp;apos;Holy&amp;apos;,
+  author = &amp;apos;TheDarkSpoon&amp;apos;,
+  abilities = {
+    { name = &amp;quot;Holy Light&amp;quot;,
+      enable = true,
+      widget = {
+        type = &amp;apos;numBox&amp;apos;,
+        value = 100,
+        step = 5,
+        tooltip = &amp;quot;Default: 100&amp;quot;,
+      },
+      tooltip = &amp;quot;Cast Holy Light on Unit with HP less than N%&amp;quot;,
+    },
+  },
+ }
+ HOLY_CONFIG_LOADED = PQI:AddRotation(config)</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>2 - Buffs</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
 ---               Blessings					 ---
 ------------------------------------------------
 local _,_,_,_,_,_,_,caster = UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK)
@@ -132,4 +151,10 @@ for i = 1, NumInGroup+1 do
 	then
 		CastSpellByID(BUFF_BOK)
 	end
+end
+
+if IsLeftControlKeyDown() and PQI_TheDarkSpoonHoly_HolyLight_enable then
+	print(&amp;quot;Enabled - &amp;quot; .. PQI_TheDarkSpoonHoly_HolyLight_value)
+elseif IsLeftControlKeyDown() then
+	print(&amp;quot;Disabled&amp;quot;)
 end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></PALADIN>
