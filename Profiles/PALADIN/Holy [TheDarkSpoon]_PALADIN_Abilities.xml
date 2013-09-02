@@ -119,7 +119,16 @@ local config = {
       },
       tooltip = &amp;quot;Cast Flash of Light on Tanks with HP less than N%&amp;quot;,
     },
-
+	{ name = &amp;quot;Cleanse&amp;quot;,
+      enable = true,
+      widget = {
+        type = &amp;apos;numBox&amp;apos;,
+        value = 1,
+        step = 1,
+        tooltip = &amp;quot;Default: 1&amp;quot;,
+      },
+      tooltip = &amp;quot;Cleanse Unit when N or more debuffs are present&amp;quot;,
+    },
     { name = &amp;quot;Divine Protection&amp;quot;,
       enable = true,
       widget = {
