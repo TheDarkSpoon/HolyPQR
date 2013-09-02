@@ -20,9 +20,6 @@ if PQR_RotationStarted == true then
 		end
 end
 
-
-
-
 --Check player is 90
 if UnitLevel(&amp;quot;player&amp;quot;) ~= 90 then
 	PQR_WriteToChat(&amp;quot;|cffff0000This rotation is designed for level 90s only!|cffffffff&amp;quot;, &amp;quot;Warning&amp;quot;)
@@ -48,6 +45,20 @@ GroupType = &amp;quot;none&amp;quot;
 function gethp(unit)
 	local hp = 100 * (UnitHealth(unit) / UnitHealthMax(unit))
 	return hp
+end
+
+function getmana(unit)
+	local mana = 100 * (UnitPower(unit) / UnitPowerMax(unit))
+	return mana
+end
+
+function needscleanse(unit, i)
+	local _,_,_,_,type = UnitDebuff(unit, i)
+	if type ~= &amp;quot;curse&amp;quot; and type ~= nil then
+		return true
+	else
+		return false
+	end
 end
 
 --Set group type
@@ -125,9 +136,24 @@ local config = {
         type = &amp;apos;numBox&amp;apos;,
         value = 1,
         step = 1,
-        tooltip = &amp;quot;Default: 1&amp;quot;,
+        max = 39,
+        min = 1,
+        tooltip = &amp;quot;Default: 1 (NOT TESTED CLEANSE, PLEASE GIVE FEEDBACK)&amp;quot;,
       },
+      newSection = true,
       tooltip = &amp;quot;Cleanse Unit when N or more debuffs are present&amp;quot;,
+    },
+    { name = &amp;quot;Check debuffs&amp;quot;,
+      enable = true,
+      widget = {
+        type = &amp;apos;numBox&amp;apos;,
+        value = 15,
+        step = 1,
+        max = 39,
+        min = 1,
+        tooltip = &amp;quot;Default: 15&amp;quot;,
+      },
+      tooltip = &amp;quot;Profile will scan up to this many debuffs on a unit. Higher = worse performance&amp;quot;,
     },
     { name = &amp;quot;Divine Protection&amp;quot;,
       enable = true,
@@ -136,8 +162,8 @@ local config = {
         value = 70,
         step = 5,
         tooltip = &amp;quot;Default: 70&amp;quot;,
-        newSection = &amp;quot;true&amp;quot;,
       },
+      newSection = true,
       tooltip = &amp;quot;Cast Divine Protection when HP is less than N%&amp;quot;,
     },
     { name = &amp;quot;Divine Shield&amp;quot;,
@@ -148,7 +174,6 @@ local config = {
         step = 5,
         tooltip = &amp;quot;Default: 20&amp;quot;,
       },
-      newSection = true,
       tooltip = &amp;quot;Cast Divine Shield when HP is less than N%&amp;quot;,
     },
     { name = &amp;quot;Lay on Hands&amp;quot;,
@@ -171,6 +196,16 @@ local config = {
       },
       tooltip = &amp;quot;Cast Hand of Protection on Unit with HP less than N%&amp;quot;,
     },
+    { name = &amp;quot;Divine Plea&amp;quot;,
+      enable = true,
+      widget = {
+        type = &amp;apos;numBox&amp;apos;,
+        value = 50,
+        step = 5,
+        tooltip = &amp;quot;Default: 50&amp;quot;,
+      },
+      tooltip = &amp;quot;Cast Divine Plea when N% of our mana remains&amp;quot;,
+    },
   },
   hotkeys = {
     { name = &amp;quot;Lights Hammer&amp;quot;,
@@ -187,6 +222,16 @@ local config = {
       enable = true,
       hotkeys = {&amp;apos;rs&amp;apos;},
       tooltip = &amp;quot;Casts Devotion Aura on raid&amp;quot;
+    },
+    { name = &amp;quot;Avenging Wrath&amp;quot;,
+      enable = true,
+      hotkeys = {&amp;apos;rc&amp;apos;},
+      tooltip = &amp;quot;Casts Avenging Wrath on Self&amp;quot;
+    },
+    { name = &amp;quot;Pause&amp;quot;,
+      enable = true,
+      hotkeys = {&amp;apos;la&amp;apos;},
+      tooltip = &amp;quot;Pause the Profile&amp;quot;
     },
   },
  }
@@ -270,10 +315,21 @@ end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False
 ---           Scan health of party			 ---
 ------------------------------------------------
 lowesthp_val, lowesthp_unit = gethp(&amp;quot;player&amp;quot;), &amp;quot;player&amp;quot;
+temp_num, cleanse_number, cleanse_unit = 0, 0, &amp;quot;player&amp;quot;
 for i=1,NumInGroup do
 	if gethp(GroupType .. i) &amp;lt; lowesthp_val then
 		lowesthp_val = gethp(GroupType .. i)
 		lowesthp_unit = GroupType .. i
+	end
+	temp_num = 0
+	for j = 1, PQI_TheDarkSpoonHoly_Checkdebuffs_value do
+		if UnitDebuff(GroupType .. i, j) and needscleanse(GroupType .. i, j) then
+			temp_num = temp_num + 1
+		end
+	end
+	if temp_num &amp;gt; cleanse_number then
+		cleanse_unit = GroupType .. i
+		cleanse_number = temp_num
 	end
 end
 
@@ -334,6 +390,22 @@ if PQI_TheDarkSpoonHoly_FlashofLight_enable and lowesthp_val &amp;lt;= PQI_TheDa
 end
 
 ------------------------------------------------
+---				  Divine Plea				 ---
+------------------------------------------------
+if PQI_TheDarkSpoonHoly_DivinePlea_enable and getmana(&amp;quot;player&amp;quot;) &amp;lt;= PQI_TheDarkSpoonHoly_DivinePlea_value and PQR_SpellAvailable(CD_DIVINEPLEA) then
+	CastSpellByID(CD_DIVINEPLEA)
+	return true
+end
+
+------------------------------------------------
+---           	    Cleanse		     		 ---
+------------------------------------------------
+if PQI_TheDarkSpoonHoly_Cleanse_enable and cleanse_number &amp;gt;= PQI_TheDarkSpoonHoly_Cleanse_value and PQR_SpellAvailable(HEAL_CLEANSE) and IsSpellInRange(GetSpellInfo(HEAL_CLEANSE), cleanse_unit) then
+	CastSpellByID(HEAL_CLEANSE, cleanse_unit)
+	return true
+end
+
+------------------------------------------------
 ---           	  Holy Light	     		 ---
 ------------------------------------------------
 if PQI_TheDarkSpoonHoly_HolyLight_enable and lowesthp_val &amp;lt;= PQI_TheDarkSpoonHoly_HolyLight_value and PQR_SpellAvailable(HEAL_HOLYLIGHT) and IsSpellInRange(GetSpellInfo(HEAL_HOLYLIGHT), lowesthp_unit) then
@@ -352,10 +424,18 @@ if PQI_TheDarkSpoonHoly_LightsHammer_enable and PQI:IsHotkeys(PQI_TheDarkSpoonHo
 end
 
 ------------------------------------------------
----               Devotion Aura				 ---
+---              Devotion Aura				 ---
 ------------------------------------------------
 if PQI_TheDarkSpoonHoly_DevotionAura_enable and PQI:IsHotkeys(PQI_TheDarkSpoonHoly_DevotionAura_key) and not GetCurrentKeyBoardFocus() then
 	CastSpellByID(CD_DEVOTAURA)
+	return true
+end
+
+------------------------------------------------
+---              Avenging Wrath				 ---
+------------------------------------------------
+if PQI_TheDarkSpoonHoly_AvengingWrath_enable and PQI:IsHotkeys(PQI_TheDarkSpoonHoly_AvengingWrath_key) and not GetCurrentKeyBoardFocus() then
+	CastSpellByID(CD_AVENGINGWRATH)
 	return true
 end
 
@@ -374,7 +454,8 @@ if SpellIsTargeting()
   or UnitChannelInfo(&amp;quot;player&amp;quot;) 
   or UnitIsDeadOrGhost(&amp;quot;player&amp;quot;) 
   or UnitIsDeadOrGhost(&amp;quot;target&amp;quot;)
-  or IsMounted() then
+  or IsMounted()
+  or (PQI:IsHotkeys(PQI_TheDarkSpoonHoly_Pause_key) and PQI_TheDarkSpoonHoly_Pause_enable) then
 	return true
 end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Spell List</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>--------------------------
 ---		 Buff IDs	   ---
@@ -390,8 +471,11 @@ BUFF_BOL = 53563
 HEAL_HOLYLIGHT = 635
 HEAL_LAYONHANDS = 633
 HEAL_FLASHOFLIGHT = 19750
+HEAL_CLEANSE = 4987
 TALENT_LIGHTSHAMMER = 114158
 CD_DIVINEPROT = 498
 CD_DIVINESHIELD = 642
 CD_HANDOFPROT = 1022
-CD_DEVOTAURA = 31821</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></PALADIN>
+CD_DEVOTAURA = 31821
+CD_DIVINEPLEA = 54428
+CD_AVENGINGWRATH = 31884</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></PALADIN>
