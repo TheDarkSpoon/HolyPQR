@@ -80,6 +80,18 @@ local config = {
       },
       tooltip = &amp;quot;Use Healthstone when HP less than N%&amp;quot;,
     },
+    { name = &amp;quot;Beacon of Light on&amp;quot;,
+      enable = true,
+      widget = {
+        type = &amp;apos;select&amp;apos;,
+        values = {&amp;quot;self&amp;quot;,&amp;quot;focus&amp;quot;,&amp;quot;mouseover&amp;quot;,&amp;quot;manual&amp;quot;},
+        value = &amp;quot;focus&amp;quot;,
+        step = 5,
+        tooltip = &amp;quot;Default: focus&amp;quot;,
+        width = 75,
+      },
+      tooltip = &amp;quot;Select Beacon of Light Target&amp;quot;,
+    },
     { name = &amp;quot;Holy Light&amp;quot;,
       enable = true,
       widget = {
@@ -88,6 +100,7 @@ local config = {
         step = 5,
         tooltip = &amp;quot;Default: 100&amp;quot;,
       },
+      newSection = true,
       tooltip = &amp;quot;Cast Holy Light on Unit with HP less than N%&amp;quot;,
     },
     { name = &amp;quot;Flash of Light&amp;quot;,
@@ -110,6 +123,28 @@ local config = {
       },
       tooltip = &amp;quot;Cast Flash of Light on Tanks with HP less than N%&amp;quot;,
     },
+    { name = &amp;quot;Divine Protection&amp;quot;,
+      enable = true,
+      widget = {
+        type = &amp;apos;numBox&amp;apos;,
+        value = 70,
+        step = 5,
+        tooltip = &amp;quot;Default: 70&amp;quot;,
+        newSection = &amp;quot;true&amp;quot;,
+      },
+      tooltip = &amp;quot;Cast Divine Protection when HP is less than N%&amp;quot;,
+    },
+    { name = &amp;quot;Divine Shield&amp;quot;,
+      enable = true,
+      widget = {
+        type = &amp;apos;numBox&amp;apos;,
+        value = 20,
+        step = 5,
+        tooltip = &amp;quot;Default: 20&amp;quot;,
+      },
+      newSection = true,
+      tooltip = &amp;quot;Cast Divine Shield when HP is less than N%&amp;quot;,
+    },
     { name = &amp;quot;Lay on Hands&amp;quot;,
       enable = true,
       widget = {
@@ -120,17 +155,15 @@ local config = {
       },
       tooltip = &amp;quot;Cast Lay on Hands on Unit with HP less than N%&amp;quot;,
     },
-    { name = &amp;quot;Beacon of Light on&amp;quot;,
+    { name = &amp;quot;Hand of Protection&amp;quot;,
       enable = true,
       widget = {
-        type = &amp;apos;select&amp;apos;,
-        values = {&amp;quot;self&amp;quot;,&amp;quot;focus&amp;quot;,&amp;quot;mouseover&amp;quot;,&amp;quot;manual&amp;quot;},
-        value = &amp;quot;focus&amp;quot;,
+        type = &amp;apos;numBox&amp;apos;,
+        value = 35,
         step = 5,
-        tooltip = &amp;quot;Default: focus&amp;quot;,
-        width = 75,
+        tooltip = &amp;quot;Default: 35&amp;quot;,
       },
-      tooltip = &amp;quot;Select Beacon of Light Target&amp;quot;,
+      tooltip = &amp;quot;Cast Hand of Protection on Unit with HP less than N%&amp;quot;,
     },
   },
   hotkeys = {
@@ -146,9 +179,9 @@ local config = {
     },
   },
  }
- if not HOLY_CONFIG_LOADED then
+ --if not HOLY_CONFIG_LOADED then
 	 HOLY_CONFIG_LOADED = PQI:AddRotation(config)
- end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>2 - Buffs</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
+ --end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>2 - Buffs</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
 ---               Blessings					 ---
 ------------------------------------------------
 local _,_,_,_,_,_,_,caster = UnitBuffID(&amp;quot;player&amp;quot;,BUFF_BOK)
@@ -246,6 +279,22 @@ end
 ------------------------------------------------
 if PQI_TheDarkSpoonHoly_LayonHands_enable and lowesthp_val &amp;lt; PQI_TheDarkSpoonHoly_LayonHands_value and PQR_SpellAvailable(HEAL_LAYONHANDS) and IsSpellInRange(GetSpellInfo(HEAL_LAYONHANDS), lowesthp_unit) then
 	CastSpellByID(HEAL_LAYONHANDS, lowesthp_unit)
+	return true
+end
+
+------------------------------------------------
+---			   Divine Protection			 ---
+------------------------------------------------
+if PQI_TheDarkSpoonHoly_DivineProtection_enable and gethp(&amp;quot;player&amp;quot;) &amp;lt; PQI_TheDarkSpoonHoly_DivineProtection_value and PQR_SpellAvailable(CD_DIVINEPROT) then
+	CastSpellByID(CD_DIVINEPROT, &amp;quot;player&amp;quot;)
+	return true
+end
+
+------------------------------------------------
+---			   	 Divine Shield				 ---
+------------------------------------------------
+if PQI_TheDarkSpoonHoly_DivineShield_enable and gethp(&amp;quot;player&amp;quot;) &amp;lt; PQI_TheDarkSpoonHoly_DivineShield_value and PQR_SpellAvailable(CD_DIVINESHIELD) then
+	CastSpellByID(CD_DIVINESHIELD, &amp;quot;player&amp;quot;)
 	return true
 end
 
