@@ -13,19 +13,15 @@ if PQR_RotationStarted == true then
 	PQR_RotationStarted = false	
 
 	-- Load LUA files
-	if PQR_LoadLua ~= nil then
-		if PQR_LoadLua(&amp;quot;PQR_DarkSpoon_Data.lua&amp;quot;) == false then
-			PQR_WriteToChat(&amp;quot;|cffb73737You&amp;apos;re missing PQR_Broseph_Data.lua - Make sure it&amp;apos;s in your Data folder! The Rotation has been halted.|cffffffff&amp;quot;, &amp;quot;Error&amp;quot;)
-			PQR_StopRotation()
-			return true
-		end
 		if PQR_LoadLua(&amp;quot;PQR_PQI.lua&amp;quot;) == false then
 			PQR_WriteToChat(&amp;quot;|cffb73737You&amp;apos;re missing PQR_PQI.lua - It&amp;apos;s required to run the profile! The Rotation has been halted.|cffffffff&amp;quot;, &amp;quot;Error&amp;quot;)
 			PQR_StopRotation()
 			return true
 		end
-	end
 end
+
+
+
 
 --Check player is 90
 if UnitLevel(&amp;quot;player&amp;quot;) ~= 90 then
@@ -54,7 +50,7 @@ function gethp(unit)
 	return hp
 end
 
---Set group type (this happens lots. needs fixing)
+--Set group type
 	if IsInGroup() and IsInRaid() then
 		GroupType = &amp;quot;raid&amp;quot;
 	elseif IsInGroup() then
@@ -123,6 +119,7 @@ local config = {
       },
       tooltip = &amp;quot;Cast Flash of Light on Tanks with HP less than N%&amp;quot;,
     },
+
     { name = &amp;quot;Divine Protection&amp;quot;,
       enable = true,
       widget = {
@@ -176,6 +173,11 @@ local config = {
       enable = true,
       hotkeys = {&amp;apos;ls&amp;apos;},
       tooltip = &amp;quot;Sets Focus target to mouseover unit&amp;quot;
+    },
+    { name = &amp;quot;Devotion Aura&amp;quot;,
+      enable = true,
+      hotkeys = {&amp;apos;rs&amp;apos;},
+      tooltip = &amp;quot;Casts Devotion Aura on raid&amp;quot;
     },
   },
  }
@@ -285,7 +287,7 @@ end
 ------------------------------------------------
 ---			   Divine Protection			 ---
 ------------------------------------------------
-if PQI_TheDarkSpoonHoly_DivineProtection_enable and gethp(&amp;quot;player&amp;quot;) &amp;lt; PQI_TheDarkSpoonHoly_DivineProtection_value and PQR_SpellAvailable(CD_DIVINEPROT) then
+if PQI_TheDarkSpoonHoly_DivineProtection_enable and gethp(&amp;quot;player&amp;quot;) &amp;lt;= PQI_TheDarkSpoonHoly_DivineProtection_value and PQR_SpellAvailable(CD_DIVINEPROT) then
 	CastSpellByID(CD_DIVINEPROT, &amp;quot;player&amp;quot;)
 	return true
 end
@@ -293,15 +295,23 @@ end
 ------------------------------------------------
 ---			   	 Divine Shield				 ---
 ------------------------------------------------
-if PQI_TheDarkSpoonHoly_DivineShield_enable and gethp(&amp;quot;player&amp;quot;) &amp;lt; PQI_TheDarkSpoonHoly_DivineShield_value and PQR_SpellAvailable(CD_DIVINESHIELD) then
+if PQI_TheDarkSpoonHoly_DivineShield_enable and gethp(&amp;quot;player&amp;quot;) &amp;lt;= PQI_TheDarkSpoonHoly_DivineShield_value and PQR_SpellAvailable(CD_DIVINESHIELD) then
 	CastSpellByID(CD_DIVINESHIELD, &amp;quot;player&amp;quot;)
+	return true
+end
+
+------------------------------------------------
+---			   Hand of Protection			 ---
+------------------------------------------------
+if PQI_TheDarkSpoonHoly_HandofProtection_enable and lowesthp_val &amp;lt;= PQI_TheDarkSpoonHoly_HandofProtection_value and PQR_SpellAvailable(CD_HANDOFPROT) and IsSpellInRange(GetSpellInfo(CD_HANDOFPROT), lowesthp_unit) then
+	CastSpellByID(CD_HANDOFPROT, lowesthp_unit)
 	return true
 end
 
 ------------------------------------------------
 ---			 Flash of Light (Tank)			 ---
 ------------------------------------------------
-if PQI_TheDarkSpoonHoly_FlashofLightonTanks_enable and lowesthp_val &amp;lt; PQI_TheDarkSpoonHoly_FlashofLightonTanks_value and PQR_SpellAvailable(HEAL_FLASHOFLIGHT) and IsSpellInRange(GetSpellInfo(HEAL_FLASHOFLIGHT), lowesthp_unit) and UnitGroupRolesAssigned(lowesthp_unit) == &amp;quot;TANK&amp;quot; then
+if PQI_TheDarkSpoonHoly_FlashofLightonTanks_enable and lowesthp_val &amp;lt;= PQI_TheDarkSpoonHoly_FlashofLightonTanks_value and PQR_SpellAvailable(HEAL_FLASHOFLIGHT) and IsSpellInRange(GetSpellInfo(HEAL_FLASHOFLIGHT), lowesthp_unit) and UnitGroupRolesAssigned(lowesthp_unit) == &amp;quot;TANK&amp;quot; then
 	CastSpellByID(HEAL_FLASHOFLIGHT, lowesthp_unit)
 	return true
 end
@@ -309,7 +319,7 @@ end
 ------------------------------------------------
 ---				 Flash of Light				 ---
 ------------------------------------------------
-if PQI_TheDarkSpoonHoly_FlashofLight_enable and lowesthp_val &amp;lt; PQI_TheDarkSpoonHoly_FlashofLight_value and PQR_SpellAvailable(HEAL_FLASHOFLIGHT) and IsSpellInRange(GetSpellInfo(HEAL_FLASHOFLIGHT), lowesthp_unit) then
+if PQI_TheDarkSpoonHoly_FlashofLight_enable and lowesthp_val &amp;lt;= PQI_TheDarkSpoonHoly_FlashofLight_value and PQR_SpellAvailable(HEAL_FLASHOFLIGHT) and IsSpellInRange(GetSpellInfo(HEAL_FLASHOFLIGHT), lowesthp_unit) then
 	CastSpellByID(HEAL_FLASHOFLIGHT, lowesthp_unit)
 	return true
 end
@@ -317,14 +327,14 @@ end
 ------------------------------------------------
 ---           	  Holy Light	     		 ---
 ------------------------------------------------
-if PQI_TheDarkSpoonHoly_HolyLight_enable and lowesthp_val &amp;lt; PQI_TheDarkSpoonHoly_HolyLight_value and PQR_SpellAvailable(HEAL_HOLYLIGHT) and IsSpellInRange(GetSpellInfo(HEAL_HOLYLIGHT), lowesthp_unit) then
+if PQI_TheDarkSpoonHoly_HolyLight_enable and lowesthp_val &amp;lt;= PQI_TheDarkSpoonHoly_HolyLight_value and PQR_SpellAvailable(HEAL_HOLYLIGHT) and IsSpellInRange(GetSpellInfo(HEAL_HOLYLIGHT), lowesthp_unit) then
 	CastSpellByID(HEAL_HOLYLIGHT, lowesthp_unit)
 	return true
 end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>-Manual</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>------------------------------------------------
 ---               Lights Hammer				 ---
 ------------------------------------------------
 if PQI_TheDarkSpoonHoly_LightsHammer_enable and PQI:IsHotkeys(PQI_TheDarkSpoonHoly_LightsHammer_key) and not GetCurrentKeyBoardFocus() then
-	CastSpellByID(TALENT_LIGHTSHAMMER, lowesthp_unit)
+	CastSpellByID(TALENT_LIGHTSHAMMER)
 	if SpellIsTargeting() then
 		CameraOrSelectOrMoveStart() 
 		CameraOrSelectOrMoveStop()
@@ -333,8 +343,46 @@ if PQI_TheDarkSpoonHoly_LightsHammer_enable and PQI:IsHotkeys(PQI_TheDarkSpoonHo
 end
 
 ------------------------------------------------
+---               Devotion Aura				 ---
+------------------------------------------------
+if PQI_TheDarkSpoonHoly_DevotionAura_enable and PQI:IsHotkeys(PQI_TheDarkSpoonHoly_DevotionAura_key) and not GetCurrentKeyBoardFocus() then
+	CastSpellByID(CD_DEVOTAURA)
+	return true
+end
+
+------------------------------------------------
 ---              Focus Mouseover			 ---
 ------------------------------------------------
 if PQI_TheDarkSpoonHoly_SetFocustoMouseover_enable and PQI:IsHotkeys(PQI_TheDarkSpoonHoly_SetFocustoMouseover_key) then
 	FocusUnit(&amp;quot;mouseover&amp;quot;)
-end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></PALADIN>
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>-Pause</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>--This code comes from CodeMyLife, thanks for making life easier :)
+if SpellIsTargeting()
+  or UnitBuffID(&amp;quot;player&amp;quot;,104934) -- Eating (Feast)
+  or UnitBuffID(&amp;quot;player&amp;quot;,80169) -- Eating
+  or UnitBuffID(&amp;quot;player&amp;quot;,87959) -- Drinking
+  or UnitBuffID(&amp;quot;player&amp;quot;,11392) -- 18 sec Invis Pot
+  or UnitBuffID(&amp;quot;player&amp;quot;,3680) -- 15 sec Invis pot  
+  or UnitChannelInfo(&amp;quot;player&amp;quot;) 
+  or UnitIsDeadOrGhost(&amp;quot;player&amp;quot;) 
+  or UnitIsDeadOrGhost(&amp;quot;target&amp;quot;)
+  or IsMounted() then
+	return true
+end</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability><Ability><Name>Spell List</Name><Default>false</Default><SpellID>0</SpellID><Actions></Actions><Lua>--------------------------
+---		 Buff IDs	   ---
+--------------------------
+BUFF_BOK = 20217
+BUFF_BOM = 19740
+BUFF_SOI = 20165
+BUFF_BOL = 53563
+
+--------------------------
+---		 Spell IDs	   ---
+--------------------------
+HEAL_HOLYLIGHT = 635
+HEAL_LAYONHANDS = 633
+HEAL_FLASHOFLIGHT = 19750
+TALENT_LIGHTSHAMMER = 114158
+CD_DIVINEPROT = 498
+CD_DIVINESHIELD = 642
+CD_HANDOFPROT = 1022
+CD_DEVOTAURA = 31821</Lua><RecastDelay>0</RecastDelay><Target>Target</Target><CancelChannel>False</CancelChannel><SkipUnknown>True</SkipUnknown></Ability></PALADIN>
